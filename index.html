@@ -1,0 +1,10 @@
+script
+    const urlParams = new URLSearchParams(window.location.search);
+    const urun = urlParams.get('urun');
+    if (urun) {
+        const temizIsim = urun.replace(-g, ' ').replace(bwg, c = c.toUpperCase());
+        document.getElementById('urun').textContent = 'Duyu Konutları - ' + temizIsim;
+    } else {
+        document.getElementById('urun').textContent = 'Ürün bilgisi bulunamadı.';
+    }
+script
