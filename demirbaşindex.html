@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>Demirbaş Bilgisi</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; margin-top: 100px; }
+        h1 { font-size: 32px; color: #333; }
+    </style>
+</head>
+<body>
+    <h1 id="urun-bilgi">Yükleniyor...</h1>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const urun = params.get("urun");
+        const sonuc = urun ? `Duyu Konutları - ${urun.charAt(0).toUpperCase() + urun.slice(1)}` : "Ürün bulunamadı.";
+        document.getElementById("urun-bilgi").textContent = sonuc;
+    </script>
+</body>
+</html>
