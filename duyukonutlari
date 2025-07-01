@@ -1,0 +1,86 @@
+import os
+import qrcode
+import pandas as pd
+from unidecode import unidecode
+
+# 1. Ürün listesini buraya yapıştır
+urunler = [
+    "BANKO",
+    "3'LÜ OTURMA KOLTUĞU",
+    "2'Lİ OTURMA KOLTUĞU",
+    "SEHPA",
+    "SATIŞ OFİS ÇALIŞMA MASASI"
+    # İstersen buraya tüm ürünleri ekle
+]
+
+# 2. GitHub kullanıcı adı ve repo adı (burayı kendine göre değiştir)
+github_kullanici_adi = "kullaniciadi"  # Buraya GitHub kullanıcı adını yaz
+repo_adi = "demirbas-qrcode"
+base_url = f"https://{github_kullanici_adi}.github.io/{repo_adi}/?urun="
+
+# 3. Çıktı klasörü (örneğin aynı dizinde "duyu_konutlari_qr_paketi")
+output_dir = "duyu_konutlari_qr_paketi"
+os.makedirs(output_dir, exist_ok=True)
+
+# 4. QR kodları için alt klasör
+qr_dir = os.path.join(output_dir, "qr_kodlari")
+os.makedirs(qr_dir, exist_ok=True)
+
+# 5. Excel için liste oluştur
+excel_data = []
+
+# 6. Her ürün için QR kod oluştur
+for urun in urunler:
+    # URL için temiz isim oluştur (küçük harf, boşluk yerine "-", Türkçe karakter kaldır)
+    urun_kod = unidecode(urun.lower().replace(" ", "-").replace("'", "").replace("’", ""))
+    urun_url = base_url + urun_kod
+    urun_ad_full = f"Duyu Konutları - {urun}"
+
+    # QR kod oluştur ve kaydet
+    qr = qrcode.make(urun_url)
+    qr_path = os.path.join(qr_dir, f"{urun_kod}.png")
+    qr.save(qr_path)
+
+    # Excel için veri ekle
+    excel_data.append([urun_ad_full, urun_url])
+
+# 7. Excel dosyasını oluştur
+excel_df = pd.DataFrame(excel_data, columns=["Demirbaş Adı", "QR Bağlantısı"])
+excel_path = os.path.join(output_dir, "qr_baglantilari.xlsx")
+excel_df.to_excel(excel_path, index=False)
+
+# 8. Basit index.html oluştur (parametreye göre ürün gösterir)
+html_content = """
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>Demirbaş Bilgisi</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; margin-top: 100px; }
+        h1 { font-size: 32px; color: #333; }
+    </style>
+</head>
+<body>
+    <h1 id="urun"></h1>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const urun = urlParams.get('urun');
+        if (urun) {
+            const temizIsim = urun.replace(/-/g, ' ').replace(/\\b\\w/g, c => c.toUpperCase());
+            document.getElementById('urun').textContent = 'Duyu Konutları - ' + temizIsim;
+        } else {
+            document.getElementById('urun').textContent = 'Ürün bilgisi bulunamadı.';
+        }
+    </script>
+</body>
+</html>
+"""
+html_path = os.path.join(output_dir, "index.html")
+with open(html_path, "w", encoding="utf-8") as f:
+    f.write(html_content)
+
+print(f"Dosyalar '{output_dir}' klasörüne kaydedildi.")
+print(f"- QR kodlar: {qr_dir}")
+print(f"- Excel dosyası: {excel_path}")
+print(f"- HTML dosyası: {html_path}")
